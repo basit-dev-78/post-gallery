@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gym Wala — Post Gallery</title>
+<style>
+  :root{
+    --ink:#0a0d0b;
+    --paper:#eef1ec;
+    --card:#12160f;
+    --green:#1FAF4F;
+    --green-deep:#0f7d34;
+    --ember:#FF6A3D;
+    --line: rgba(238,241,236,0.14);
+    --muted:#9aa79e;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --ink:#f4f2ea; --paper:#12180f; --card:#ffffff; --line: rgba(18,24,15,0.12); --muted:#5c665a; }
+  }
+  :root[data-theme="dark"]{ --ink:#0a0d0b; --paper:#eef1ec; --card:#12160f; --line: rgba(238,241,236,0.14); --muted:#9aa79e; }
+  :root[data-theme="light"]{ --ink:#f4f2ea; --paper:#12180f; --card:#ffffff; --line: rgba(18,24,15,0.12); --muted:#5c665a; }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family: "Segoe UI", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    padding:36px 40px 64px;
+  }
+
+  header{
+    display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:14px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:20px; margin-bottom:8px;
+  }
+  h1{
+    font-family: Impact, "Arial Black", "Segoe UI Black", sans-serif;
+    font-weight:900; text-transform:uppercase; letter-spacing:0.3px;
+    font-size:30px; margin:0; color:var(--paper);
+  }
+  h1 span{ color:var(--green); }
+  .count{ font-size:14px; color:var(--muted); }
+
+  .filters{
+    display:flex; gap:10px; margin:20px 0 26px; flex-wrap:wrap;
+  }
+  .filters button{
+    font-family:inherit; font-size:13.5px; font-weight:600; letter-spacing:.03em;
+    color:var(--paper); background:transparent; border:1px solid var(--line);
+    border-radius:999px; padding:8px 16px; cursor:pointer;
+  }
+  .filters button.active{ background:var(--green); border-color:var(--green); color:#06170c; }
+  .filters button:focus-visible{ outline:2px solid var(--green); outline-offset:2px; }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap:22px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .card:hover{ transform:translateY(-3px); border-color:var(--green-deep); }
+  .thumb{
+    display:block; width:100%; aspect-ratio:1/1; object-fit:cover;
+    background:#000;
+  }
+  .meta{ padding:12px 14px 14px; display:flex; flex-direction:column; gap:6px; }
+  .title{ font-size:14.5px; font-weight:700; color:var(--paper); line-height:1.3; }
+  .tags{ display:flex; gap:6px; flex-wrap:wrap; }
+  .tag{
+    font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; font-weight:700;
+    padding:3px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted);
+  }
+  .tag.dark{ color:#cdd6cf; border-color:#3a4a3f; }
+  .tag.light{ color:#d94e1f; border-color:rgba(217,78,31,0.4); }
+  .tag.cat-gym{ color:var(--green); border-color:var(--green-deep); }
+  .tag.cat-software{ color:var(--ember); border-color:rgba(255,106,61,0.4); }
+
+  a.thumblink{ display:block; }
+
+  footer{ margin-top:40px; font-size:12.5px; color:var(--muted); text-align:center; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>GYM <span>WALA</span> — Post Gallery</h1>
+  <span class="count" id="count"></span>
+</header>
+
+<div class="filters" id="filters">
+  <button data-filter="all" class="active">All</button>
+  <button data-filter="gym">Gym Posts</button>
+  <button data-filter="software">Software Posts</button>
+  <button data-filter="dark">Dark Theme</button>
+  <button data-filter="light">Light Theme</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>Click any image to open it full size. Files live in this same folder.</footer>
+
+<script>
+  const posts = [
+    { file: "gymwala_post_dark_1080x1080.png", title: "Membership Drive", theme: "dark", cat: "gym" },
+    { file: "gymwala_post_light_1080x1080.png", title: "Membership Drive", theme: "light", cat: "gym" },
+    { file: "gymwala_post_new_batches_1080x1080.png", title: "New Batches Announced", theme: "dark", cat: "gym" },
+    { file: "gymwala_post_new_batches_light_1080x1080.png", title: "New Batches Announced", theme: "light", cat: "gym" },
+    { file: "gymwala_post_referral_1080x1080.png", title: "Referral Program", theme: "dark", cat: "gym" },
+    { file: "gymwala_post_free_trial_dark_1080x1080.png", title: "Free Trial / Open House", theme: "dark", cat: "gym" },
+    { file: "gymwala_post_free_trial_light_1080x1080.png", title: "Free Trial / Open House", theme: "light", cat: "gym" },
+    { file: "gymwala_post_transformation_dark_1080x1080.png", title: "Member Transformation", theme: "dark", cat: "gym" },
+    { file: "gymwala_post_transformation_light_1080x1080.png", title: "Member Transformation", theme: "light", cat: "gym" },
+
+    { file: "gymwala_post_software_dark_1080x1080.png", title: "Run Your Gym, Not Spreadsheets", theme: "dark", cat: "software" },
+    { file: "gymwala_post_software_light_1080x1080.png", title: "Run Your Gym, Not Spreadsheets", theme: "light", cat: "software" },
+    { file: "gymwala_post_software_easy_dark_1080x1080.png", title: "So Easy, Staff Learn It In A Day", theme: "dark", cat: "software" },
+    { file: "gymwala_post_software_easy_light_1080x1080.png", title: "So Easy, Staff Learn It In A Day", theme: "light", cat: "software" },
+    { file: "gymwala_post_software_manage_smarter_dark_1080x1080.png", title: "Manage Your Gym Smarter", theme: "dark", cat: "software" },
+    { file: "gymwala_post_software_manage_smarter_light_1080x1080.png", title: "Manage Your Gym Smarter", theme: "light", cat: "software" },
+    { file: "gymwala_post_software_upgrade_dark_1080x1080.png", title: "It's Time To Upgrade", theme: "dark", cat: "software" },
+    { file: "gymwala_post_software_upgrade_light_1080x1080.png", title: "It's Time To Upgrade", theme: "light", cat: "software" },
+    { file: "gymwala_post_software_scale_dark_1080x1080.png", title: "Your Gym Deserves More", theme: "dark", cat: "software" },
+    { file: "gymwala_post_software_scale_light_1080x1080.png", title: "Your Gym Deserves More", theme: "light", cat: "software" },
+    { file: "gymwala_post_software_difference_dark_1080x1080.png", title: "Busy Gym vs. Growing Gym", theme: "dark", cat: "software" },
+    { file: "gymwala_post_software_difference_light_1080x1080.png", title: "Busy Gym vs. Growing Gym", theme: "light", cat: "software" },
+    { file: "gymwala_post_software_revenue_dark_1080x1080.png", title: "How Much Revenue Is Your Gym Losing?", theme: "dark", cat: "software" },
+    { file: "gymwala_post_software_revenue_light_1080x1080.png", title: "How Much Revenue Is Your Gym Losing?", theme: "light", cat: "software" },
+    { file: "gymwala_post_software_growing_dark_1080x1080.png", title: "Is Your Management Keeping Up?", theme: "dark", cat: "software" },
+    { file: "gymwala_post_software_growing_light_1080x1080.png", title: "Is Your Management Keeping Up?", theme: "light", cat: "software" },
+    { file: "gymwala_post_software_renewal_dark_1080x1080.png", title: "Every Missed Renewal Is A Missed Opportunity", theme: "dark", cat: "software" },
+    { file: "gymwala_post_software_renewal_light_1080x1080.png", title: "Every Missed Renewal Is A Missed Opportunity", theme: "light", cat: "software" },
+    { file: "gymwala_post_software_strength_dark_1080x1080.png", title: "Behind Every Successful Gym", theme: "dark", cat: "software" },
+    { file: "gymwala_post_software_strength_light_1080x1080.png", title: "Behind Every Successful Gym", theme: "light", cat: "software" }
+  ];
+
+  const grid = document.getElementById("grid");
+  const countEl = document.getElementById("count");
+
+  function render(filter){
+    grid.innerHTML = "";
+    const shown = posts.filter(p => filter === "all" || p.theme === filter || p.cat === filter);
+    countEl.textContent = shown.length + " of " + posts.length + " posts";
+    for (const p of shown){
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <a class="thumblink" href="${p.file}" target="_blank" rel="noopener">
+          <img class="thumb" src="${p.file}" alt="${p.title}" loading="lazy">
+        </a>
+        <div class="meta">
+          <div class="title">${p.title}</div>
+          <div class="tags">
+            <span class="tag ${p.theme}">${p.theme}</span>
+            <span class="tag cat-${p.cat}">${p.cat === "gym" ? "Gym Post" : "Software Post"}</span>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+  }
+
+  document.getElementById("filters").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    document.querySelectorAll("#filters button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    render(btn.dataset.filter);
+  });
+
+  render("all");
+</script>
+
+</body>
+</html>
